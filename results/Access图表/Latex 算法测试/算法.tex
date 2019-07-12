@@ -1,0 +1,68 @@
+\documentclass{article}
+\usepackage[ruled, vlined]{algorithm2e}
+
+\begin{document}
+
+\begin{algorithm}[H]
+\caption{The DQN algorithm with experience replay}
+\LinesNumbered
+\KwIn {$workflows$; $Amazon\ EC2\ instances$}
+\KwOut{Q-values $Q$, action profile $a$, reward $r$}
+
+Initialize replay memory $D$, action-value function $Q$ with random weights\;
+observe initial state $S$\;
+
+
+\While{not at $max\_episode$}{
+select an action $a$\;
+\eIf{with probability $\varepsilon$}{
+select a random action\;
+}{
+select replace $a=argmax_{a^{'}}Q(s,a^{'})$ with $r_m$\;
+}
+carry out action $a$\;
+observe reward $r$ and new state $s^{'}$\;
+store experience $<s,a,r,s^{'}>$  in replay memory $D$\;
+sample random transitions $<ss,aa,rr,ss^{'}>$ from replay memory $D$\;
+calculate target for each minibatch transition\;
+
+\eIf{$ss^{'}$ is terminal state}{
+$tt=rr$\;
+}{
+$tt$=$rr$+$\gamma$ $max_{a^{'}}Q(ss^{'},aa^{'}$)\;
+}
+train the Q-network using $(tt-Q(ss,aa))^2$ as loss\;
+{$s=s^{'}$}
+}
+return {Q-values $Q$, action profile $a$, reward $r$}
+
+\end{algorithm}
+
+
+\bigskip
+
+\begin{algorithm}[H]
+\caption{DECENTRALIZED($\Gamma,f,g,\alpha,i$)}
+\LinesNumbered
+\KwIn {game $\Gamma$, selection mechanism $f$, decay schedule $g$, learning rate $\alpha$, DQN-based agent $i$ }
+\KwOut {values $V$, Q-values $Q$, joint policy $\pi^{i*}$ }
+initialize Q-values $Q$, state $s$, action profile $a$\;
+
+\While{not at $max\_episode$}{
+simulate action $a_i$ in state $s$\;
+observe action profile $a_{-i}$, rewards $R(s,a)$, and next state $s^{'}$\;
+select $\pi_{s^{'}}^{i*}\in f(Q(s^{'})) $\;
+\For{all DQN-based agent $j$}{
+update $V_j(s^{'})$\;
+update $Q_j(s,a)$\;
+}
+choose action $a_i^{'}$\;
+update $s=s^{'}, a=a^{'}$\;
+decay $\alpha$ via $g$\;
+}
+return {values $V$, Q-values $Q$, joint policy $\pi^{i*}$ }\;
+\end{algorithm}
+
+
+
+\end{document}
